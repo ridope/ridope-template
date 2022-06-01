@@ -1,2 +1,2 @@
-# aes-application
-AES application for the VexRiscv core
+# Ridope-template
+Template repository for creating new repositories
