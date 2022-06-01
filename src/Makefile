@@ -3,28 +3,12 @@ BUILD_DIR?=../build/
 include $(BUILD_DIR)/software/include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
 
-
 OBJDIR = ./obj
 EXT_LIBDIR = ../ext_lib
 
-TINY_CRYPT_OBJ := $(OBJDIR)/aes_decrypt.o \
-				$(OBJDIR)/aes_encrypt.o \
-				$(OBJDIR)/ctr_mode.o \
-				$(OBJDIR)/ctr_prng.o \
-				$(OBJDIR)/ccm_mode.o \
-				$(OBJDIR)/cmac_mode.o \
-				$(OBJDIR)/utils.o 
-
-
-OBJECTS := $(TINY_CRYPT_OBJ) \
-		  $(OBJDIR)/isr.o \
+OBJECTS :=$(OBJDIR)/isr.o \
 		  $(OBJDIR)/main.o \
 		  $(OBJDIR)/crt0.o
-
-INCLUDES += -I$(EXT_LIBDIR)/tinycrypt \
-			-I$(EXT_LIBDIR)/tinycrypt/tests \
-			-I$(EXT_LIBDIR)/tinycrypt/tests/include \
-			-I$(EXT_LIBDIR)/tinycrypt/lib/include \
 
 all: demo.bin
 
@@ -41,13 +25,11 @@ demo.elf: $(OBJECTS)
 		-N -o $@ \
 		$(OBJECTS) \
 		$(PACKAGES:%=-L$(BUILD_DIR)/software/%) \
-		-L$(EXT_LIBDIR)/tinycrypt/lib \
 		$(LIBS:lib%=-l%) \
-		-ltinycrypt \
 		-lgcc 
 	chmod -x $@
 
-$(OBJDIR)/main.o: main.c $(EXT_LIBDIR)/tinycrypt/lib/libtinycrypt.a
+$(OBJDIR)/main.o: main.c
 	$(compile)
 
 $(OBJDIR)/crt0.o: $(CPU_DIRECTORY)/crt0.S
@@ -59,16 +41,10 @@ $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/%.o: %.c
 	$(compile)
 
-$(OBJDIR)/%.o: $(EXT_LIBDIR)/tinycrypt/lib/source/%.c
-	$(compile)
-
-$(EXT_LIBDIR)/tinycrypt/lib/libtinycrypt.a: $(TINY_CRYPT_OBJ)
-	$(AR) $(ARFLAGS) $@ $^
-
 $(OBJDIR)/%.o: %.S
 	$(assemble)
 
 clean:
-	$(RM) $(OBJECTS) $(OBJECTS:.o=.d) $(EXT_LIBDIR)/tinycrypt/lib/libtinycrypt.a demo.elf demo.bin .*~ *~
+	$(RM) $(OBJECTS) $(OBJECTS:.o=.d) demo.elf demo.bin .*~ *~
 
 .PHONY: all main.o clean load
